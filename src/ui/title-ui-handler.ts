@@ -80,10 +80,6 @@ export default class TitleUiHandler extends OptionSelectUiHandler {
 
       const ui = this.getUi();
 
-      this.dailyRunScoreboard.update();
-
-      this.updateTitleStats();
-
       this.titleStatsTimer = setInterval(() => this.updateTitleStats(), 60000);
 
       this.scene.tweens.add({

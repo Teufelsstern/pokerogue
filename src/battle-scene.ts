@@ -63,7 +63,7 @@ import * as Overrides from './overrides';
 import {InputsController} from "./inputs-controller";
 import {UiInputs} from "./ui-inputs";
 
-export const bypassLogin = import.meta.env.VITE_BYPASS_LOGIN === "1";
+export const bypassLogin = import.meta.env.VITE_BYPASS_LOGIN === "0";
 
 const DEBUG_RNG = false;
 
