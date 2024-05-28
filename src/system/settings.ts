@@ -66,7 +66,7 @@ export const settingOptions: SettingOptions = {
   [Setting.Swap_A_and_B]: ["Enabled", "Disabled"],
   [Setting.Touch_Controls]: ["Auto", "Disabled"],
   [Setting.Vibration]: ["Auto", "Disabled"],
-  [Setting.Skip_After_Attack_Messages]: ["On", "Off]
+  [Setting.Skip_After_Attack_Messages]: ["On", "Off"]
 };
 
 export const settingDefaults: SettingDefaults = {
