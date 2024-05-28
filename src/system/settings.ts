@@ -131,7 +131,7 @@ export function setSetting(scene: BattleScene, setting: Setting, value: integer)
     scene.enableRetries = settingOptions[setting][value] === "On";
     break;
   case Setting.Skip_After_Attack_Messages:
-    scene.Skip_After_Attack_Messages = settingOptions[setting][value] === "On";
+    scene.skipAfterAttackMessages = settingOptions[setting][value] === "On";
     break;
   case Setting.Money_Format:
     switch (settingOptions[setting][value]) {
