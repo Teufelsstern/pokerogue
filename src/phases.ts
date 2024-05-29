@@ -2605,7 +2605,7 @@ export class MovePhase extends BattlePhase {
         doMove();
       } else {
         if (healed) {
-          queueMessageIfEnabled(this, (getPokemonMessage(this.pokemon, getStatusEffectHealText(this.pokemon.status.effect)));
+          queueMessageIfEnabled(this, getPokemonMessage(this.pokemon, getStatusEffectHealText(this.pokemon.status.effect)));
           this.pokemon.resetStatus();
           this.pokemon.updateInfo();
         }
