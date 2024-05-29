@@ -85,7 +85,7 @@ export function getBerryEffectFunc(berryType: BerryType): BerryEffectFunc {
       }
       const hpHealed = new Utils.NumberHolder(Math.floor(pokemon.getMaxHp() / 4));
       applyAbAttrs(DoubleBerryEffectAbAttr, pokemon, null, hpHealed);
-      if (!this.scene.skipAfterAttackMessages) {
+      if (!pokemon.scene.skipAfterAttackMessages) {
         pokemon.scene.unshiftPhase(new PokemonHealPhase(pokemon.scene, pokemon.getBattlerIndex(),
           hpHealed.value, getPokemonMessage(pokemon, `'s ${getBerryName(berryType)}\nrestored its HP!`), true));
       }
