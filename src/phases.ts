@@ -4496,7 +4496,7 @@ export class PokemonHealPhase extends CommonAnimPhase {
       this.message = getPokemonMessage(pokemon, "'s\nHP is full!");
     }
 
-    if (this.message) {
+    if (this.message && !this.scene.skipAfterAttackMessages) {
       this.scene.queueMessage(this.message);
     }
 
@@ -5101,7 +5101,7 @@ export class PartyStatusCurePhase extends BattlePhase {
         }
       }
     }
-    if (this.message) {
+    if (this.message && !this.scene.skipAfterAttackMessages) {
       this.scene.queueMessage(this.message);
     }
     this.end();
