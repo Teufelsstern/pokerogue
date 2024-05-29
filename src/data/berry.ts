@@ -85,8 +85,14 @@ export function getBerryEffectFunc(berryType: BerryType): BerryEffectFunc {
       }
       const hpHealed = new Utils.NumberHolder(Math.floor(pokemon.getMaxHp() / 4));
       applyAbAttrs(DoubleBerryEffectAbAttr, pokemon, null, hpHealed);
-      pokemon.scene.unshiftPhase(new PokemonHealPhase(pokemon.scene, pokemon.getBattlerIndex(),
-        hpHealed.value, getPokemonMessage(pokemon, `'s ${getBerryName(berryType)}\nrestored its HP!`), true));
+      if (!this.scene.skipAfterAttackMessages) {
+        pokemon.scene.unshiftPhase(new PokemonHealPhase(pokemon.scene, pokemon.getBattlerIndex(),
+          hpHealed.value, getPokemonMessage(pokemon, `'s ${getBerryName(berryType)}\nrestored its HP!`), true));
+      }
+      else {
+        pokemon.scene.unshiftPhase(new PokemonHealPhase(pokemon.scene, pokemon.getBattlerIndex(),
+          hpHealed.value, null, true));
+      }
     };
   case BerryType.LUM:
     return (pokemon: Pokemon) => {
