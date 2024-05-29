@@ -12,6 +12,7 @@ import * as Utils from "../utils";
 import { WeatherType } from "./weather";
 import { ArenaTagSide, ArenaTrapTag } from "./arena-tag";
 import { ArenaTagType } from "./enums/arena-tag-type";
+import { queueMessageIfEnabled } from './messageUtils';
 import { UnswappableAbilityAbAttr, UncopiableAbilityAbAttr, UnsuppressableAbilityAbAttr, BlockRecoilDamageAttr, BlockOneHitKOAbAttr, IgnoreContactAbAttr, MaxMultiHitAbAttr, applyAbAttrs, BlockNonDirectDamageAbAttr, applyPreSwitchOutAbAttrs, PreSwitchOutAbAttr, applyPostDefendAbAttrs, PostDefendContactApplyStatusEffectAbAttr, MoveAbilityBypassAbAttr, ReverseDrainAbAttr, FieldPreventExplosiveMovesAbAttr, ForceSwitchOutImmunityAbAttr, BlockItemTheftAbAttr, applyPostAttackAbAttrs, ConfusionOnStatusEffectAbAttr } from "./ability";
 import { Abilities } from "./enums/abilities";
 import { allAbilities } from "./ability";
@@ -826,7 +827,7 @@ export class RecoilAttr extends MoveEffectAttr {
     }
 
     user.damageAndUpdate(recoilDamage, HitResult.OTHER, false, true, true);
-    user.scene.queueMessage(getPokemonMessage(user, " is hit\nwith recoil!"));
+    queueMessageIfEnabled(user, getPokemonMessage(user, " is hit\nwith recoil!"));
     user.turnData.damageTaken += recoilDamage;
 
     return true;
@@ -938,7 +939,7 @@ export class HalfSacrificialAttr extends MoveEffectAttr {
     applyAbAttrs(BlockNonDirectDamageAbAttr, user, cancelled);
     if (!cancelled.value) {
       user.damageAndUpdate(Math.ceil(user.getMaxHp()/2), HitResult.OTHER, false, true, true);
-      user.scene.queueMessage(getPokemonMessage(user, " cut its own HP to power up its move!")); // Queue recoil message
+      queueMessageIfEnabled(user, getPokemonMessage(user, " cut its own HP to power up its move!")); // Queue recoil message
     }
     return true;
   }
@@ -1423,7 +1424,7 @@ export class PsychoShiftEffectAttr extends MoveEffectAttr {
     if (!target.status || (target.status.effect === statusToApply && move.chance < 0)) {
       const statusAfflictResult = target.trySetStatus(statusToApply, true, user);
       if (statusAfflictResult) {
-        user.scene.queueMessage(getPokemonMessage(user, getStatusEffectHealText(user.status.effect)));
+        queueMessageIfEnabled(user, getPokemonMessage(user, getStatusEffectHealText(user.status.effect)));
         user.resetStatus();
         user.updateInfo();
       }
@@ -1460,7 +1461,7 @@ export class StealHeldItemChanceAttr extends MoveEffectAttr {
         const stolenItem = tierHeldItems[user.randSeedInt(tierHeldItems.length)];
         user.scene.tryTransferHeldItemModifier(stolenItem, user, false, false).then(success => {
           if (success) {
-            user.scene.queueMessage(getPokemonMessage(user, ` stole\n${target.name}'s ${stolenItem.type.name}!`));
+            queueMessageIfEnabled(user, getPokemonMessage(user, ` stole\n${target.name}'s ${stolenItem.type.name}!`));
           }
           resolve(success);
         });
@@ -1509,7 +1510,7 @@ export class RemoveHeldItemAttr extends MoveEffectAttr {
         const stolenItem = tierHeldItems[user.randSeedInt(tierHeldItems.length)];
         user.scene.tryTransferHeldItemModifier(stolenItem, user, false, false).then(success => {
           if (success) {
-            user.scene.queueMessage(getPokemonMessage(user, ` knocked off\n${target.name}'s ${stolenItem.type.name}!`));
+            queueMessageIfEnabled(user, getPokemonMessage(user, ` knocked off\n${target.name}'s ${stolenItem.type.name}!`));
           }
           resolve(success);
         });
@@ -1622,7 +1623,7 @@ export class StealEatBerryAttr extends EatBerryAttr {
       }
       target.scene.updateModifiers(target.isPlayer());
 
-      user.scene.queueMessage(getPokemonMessage(user, ` stole and ate\n${target.name}'s ${this.chosenBerry.type.name}!`));
+      queueMessageIfEnabled(user, getPokemonMessage(user, ` stole and ate\n${target.name}'s ${this.chosenBerry.type.name}!`));
       return super.apply(user, user, move, args);
     }
 
@@ -1646,7 +1647,7 @@ export class HealStatusEffectAttr extends MoveEffectAttr {
 
     const pokemon = this.selfTarget ? user : target;
     if (pokemon.status && this.effects.includes(pokemon.status.effect)) {
-      pokemon.scene.queueMessage(getPokemonMessage(pokemon, getStatusEffectHealText(pokemon.status.effect)));
+      queueMessageIfEnabled(pokemon, getPokemonMessage(pokemon, getStatusEffectHealText(pokemon.status.effect)));
       pokemon.resetStatus();
       pokemon.updateInfo();
 
@@ -1819,7 +1820,7 @@ export class ChargeAttr extends OverrideMoveEffectAttr {
       if (!lastMove || lastMove.move !== move.id || (lastMove.result !== MoveResult.OTHER && (this.sameTurn || lastMove.turn !== user.scene.currentBattle.turn))) {
         (args[0] as Utils.BooleanHolder).value = true;
         new MoveChargeAnim(this.chargeAnim, move.id, user).play(user.scene, () => {
-          user.scene.queueMessage(getPokemonMessage(user, ` ${this.chargeText.replace("{TARGET}", target.name)}`));
+          queueMessageIfEnabled(user, getPokemonMessage(user, ` ${this.chargeText.replace("{TARGET}", target.name)}`));
           if (this.tagType) {
             user.addTag(this.tagType, 1, move.id, user.id);
           }
@@ -1923,7 +1924,7 @@ export class DelayedAttackAttr extends OverrideMoveEffectAttr {
       if (args.length < 2 || !args[1]) {
         new MoveChargeAnim(this.chargeAnim, move.id, user).play(user.scene, () => {
           (args[0] as Utils.BooleanHolder).value = true;
-          user.scene.queueMessage(getPokemonMessage(user, ` ${this.chargeText.replace("{TARGET}", target.name)}`));
+          queueMessageIfEnabled(user, getPokemonMessage(user, ` ${this.chargeText.replace("{TARGET}", target.name)}`));
           user.pushMoveHistory({ move: move.id, targets: [ target.getBattlerIndex() ], result: MoveResult.OTHER });
           user.scene.arena.addTag(this.tagType, 3, move.id, user.id, ArenaTagSide.BOTH, target.getBattlerIndex());
 
@@ -2082,7 +2083,7 @@ export class HalfHpStatMaxAttr extends StatChangeAttr {
       }
       user.updateInfo().then(() => {
         const ret = super.apply(user, target, move, args);
-        user.scene.queueMessage(getPokemonMessage(user, ` cut its own HP\nand maximized its ${getBattleStatName(this.stats[0])}!`));
+        queueMessageIfEnabled(user, getPokemonMessage(user, ` cut its own HP\nand maximized its ${getBattleStatName(this.stats[0])}!`));
         resolve(ret);
       });
     });
@@ -2139,7 +2140,7 @@ export class CopyStatsAttr extends MoveEffectAttr {
     target.updateInfo();
     user.updateInfo();
 
-    target.scene.queueMessage(getPokemonMessage(user, " copied\n") + getPokemonMessage(target, "'s stat changes!"));
+    queueMessageIfEnabled(target, getPokemonMessage(user, " copied\n") + getPokemonMessage(target, "'s stat changes!"));
 
     return true;
   }
@@ -2157,7 +2158,7 @@ export class InvertStatsAttr extends MoveEffectAttr {
     target.updateInfo();
     user.updateInfo();
 
-    target.scene.queueMessage(getPokemonMessage(target, "'s stat changes\nwere all reversed!"));
+    queueMessageIfEnabled(target, getPokemonMessage(target, "'s stat changes\nwere all reversed!"));
 
     return true;
   }
@@ -2175,7 +2176,7 @@ export class ResetStatsAttr extends MoveEffectAttr {
     target.updateInfo();
     user.updateInfo();
 
-    target.scene.queueMessage(getPokemonMessage(target, "'s stat changes\nwere eliminated!"));
+    queueMessageIfEnabled(target, getPokemonMessage(target, "'s stat changes\nwere eliminated!"));
 
     return true;
   }
@@ -2205,7 +2206,7 @@ export class SwapStatsAttr extends MoveEffectAttr {
     }
     target.updateInfo();
     user.updateInfo();
-    target.scene.queueMessage(getPokemonMessage(user, " switched stat changes with the target!"));
+    queueMessageIfEnabled(target, getPokemonMessage(user, " switched stat changes with the target!"));
     return true;
   }
 }
@@ -3303,7 +3304,7 @@ const crashDamageFunc = (user: Pokemon, move: Move) => {
   }
 
   user.damageAndUpdate(Math.floor(user.getMaxHp() / 2), HitResult.OTHER, false, true);
-  user.scene.queueMessage(getPokemonMessage(user, " kept going\nand crashed!"));
+  queueMessageIfEnabled(user, getPokemonMessage(user, " kept going\nand crashed!"));
   user.turnData.damageTaken += Math.floor(user.getMaxHp() / 2);
 
   return true;
@@ -3343,7 +3344,7 @@ export class DisableMoveAttr extends MoveEffectAttr {
       target.summonData.disabledMove = disabledMove.moveId;
       target.summonData.disabledTurns = 4;
 
-      user.scene.queueMessage(getPokemonMessage(target, `'s ${disabledMove.getName()}\nwas disabled!`));
+      queueMessageIfEnabled(user, getPokemonMessage(target, `'s ${disabledMove.getName()}\nwas disabled!`));
 
       return true;
     }
@@ -3513,12 +3514,12 @@ export class CurseAttr extends MoveEffectAttr {
   apply(user: Pokemon, target: Pokemon, move:Move, args: any[]): boolean {
     if (user.getTypes(true).includes(Type.GHOST)) {
       if (target.getTag(BattlerTagType.CURSED)) {
-        user.scene.queueMessage("But it failed!");
+        queueMessageIfEnabled(user, "But it failed!");
         return false;
       }
       const curseRecoilDamage = Math.max(1, Math.floor(user.getMaxHp() / 2));
       user.damageAndUpdate(curseRecoilDamage, HitResult.OTHER, false, true, true);
-      user.scene.queueMessage(getPokemonMessage(user, ` cut its own HP\nand laid a curse on the ${target.name}!`));
+      queueMessageIfEnabled(user, getPokemonMessage(user, ` cut its own HP\nand laid a curse on the ${target.name}!`));
       target.addTag(BattlerTagType.CURSED, 0, move.id, user.id);
       return true;
     } else {
@@ -3639,7 +3640,7 @@ export class IgnoreAccuracyAttr extends AddBattlerTagAttr {
       return false;
     }
 
-    user.scene.queueMessage(getPokemonMessage(user, ` took aim\nat ${target.name}!`));
+    queueMessageIfEnabled(user, getPokemonMessage(user, ` took aim\nat ${target.name}!`));
 
     return true;
   }
@@ -3655,7 +3656,7 @@ export class AlwaysCritsAttr extends AddBattlerTagAttr {
       return false;
     }
 
-    user.scene.queueMessage(getPokemonMessage(user, ` took aim\nat ${target.name}!`));
+    queueMessageIfEnabled(user, getPokemonMessage(user, ` took aim\nat ${target.name}!`));
 
     return true;
   }
@@ -3671,7 +3672,7 @@ export class FaintCountdownAttr extends AddBattlerTagAttr {
       return false;
     }
 
-    user.scene.queueMessage(getPokemonMessage(target, `\nwill faint in ${this.turnCountMin - 1} turns.`));
+    queueMessageIfEnabled(user, getPokemonMessage(target, `\nwill faint in ${this.turnCountMin - 1} turns.`));
 
     return true;
   }
@@ -3883,7 +3884,7 @@ export class RevivalBlessingAttr extends MoveEffectAttr {
         const slotIndex = user.scene.getEnemyParty().findIndex(p => pokemon.id === p.id);
         pokemon.resetStatus();
         pokemon.heal(Math.min(Math.max(Math.ceil(Math.floor(0.5 * pokemon.getMaxHp())), 1), pokemon.getMaxHp()));
-        user.scene.queueMessage(`${pokemon.name} was revived!`,0,true);
+        queueMessageIfEnabled(user, `${pokemon.name} was revived!`,0,true);
 
         if (user.scene.currentBattle.double && user.scene.getEnemyParty().length > 1) {
           const allyPokemon = user.getAlly();
@@ -3895,7 +3896,7 @@ export class RevivalBlessingAttr extends MoveEffectAttr {
         }
         resolve(true);
       } else {
-        user.scene.queueMessage("But it failed!");
+        queueMessageIfEnabled(user, "But it failed!");
         resolve(false);
       }
     });
@@ -3960,7 +3961,7 @@ export class ForceSwitchOutAttr extends MoveEffectAttr {
 	  	if (switchOutTarget.hp) {
 	  	  switchOutTarget.hideInfo().then(() => switchOutTarget.destroy());
 	  	  switchOutTarget.scene.field.remove(switchOutTarget);
-	  	  user.scene.queueMessage(getPokemonMessage(switchOutTarget, " fled!"), null, true, 500);
+	  	  queueMessageIfEnabled(user, getPokemonMessage(switchOutTarget, " fled!"), null, true, 500);
 	  	}
 
 	  	if (!switchOutTarget.getAlly()?.isActive(true)) {
@@ -4072,7 +4073,7 @@ export class CopyTypeAttr extends MoveEffectAttr {
     user.summonData.types = target.getTypes(true);
     user.updateInfo();
 
-    user.scene.queueMessage(getPokemonMessage(user, `'s type\nchanged to match ${target.name}'s!`));
+    queueMessageIfEnabled(user, getPokemonMessage(user, `'s type\nchanged to match ${target.name}'s!`));
 
     return true;
   }
@@ -4097,7 +4098,7 @@ export class CopyBiomeTypeAttr extends MoveEffectAttr {
     user.summonData.types = [ biomeType ];
     user.updateInfo();
 
-    user.scene.queueMessage(getPokemonMessage(user, ` transformed\ninto the ${Utils.toReadableString(Type[biomeType])} type!`));
+    queueMessageIfEnabled(user, getPokemonMessage(user, ` transformed\ninto the ${Utils.toReadableString(Type[biomeType])} type!`));
 
     return true;
   }
@@ -4116,7 +4117,7 @@ export class ChangeTypeAttr extends MoveEffectAttr {
     target.summonData.types = [this.type];
     target.updateInfo();
 
-    user.scene.queueMessage(getPokemonMessage(target, ` transformed\ninto the ${Utils.toReadableString(Type[this.type])} type!`));
+    queueMessageIfEnabled(user, getPokemonMessage(target, ` transformed\ninto the ${Utils.toReadableString(Type[this.type])} type!`));
 
     return true;
   }
@@ -4141,7 +4142,7 @@ export class AddTypeAttr extends MoveEffectAttr {
     target.summonData.types = types;
     target.updateInfo();
 
-    user.scene.queueMessage(`${Utils.toReadableString(Type[this.type])} was added to\n` + getPokemonMessage(target, "!"));
+    queueMessageIfEnabled(user, `${Utils.toReadableString(Type[this.type])} was added to\n` + getPokemonMessage(target, "!"));
 
     return true;
   }
@@ -4165,7 +4166,7 @@ export class FirstMoveTypeAttr extends MoveEffectAttr {
 
     user.summonData.types = [ firstMoveType ];
 
-    user.scene.queueMessage(getPokemonMessage(user, ` transformed\ninto to the ${Utils.toReadableString(Type[firstMoveType])} type!`));
+    queueMessageIfEnabled(user, getPokemonMessage(user, ` transformed\ninto to the ${Utils.toReadableString(Type[firstMoveType])} type!`));
 
     return true;
   }
@@ -4434,7 +4435,7 @@ export class ReducePpMoveAttr extends MoveEffectAttr {
     const movesetMove = target.getMoveset().find(m => m.moveId === lastMove.move);
     const lastPpUsed = movesetMove.ppUsed;
     movesetMove.ppUsed = Math.min(movesetMove.ppUsed + 4, movesetMove.getMovePp());
-    user.scene.queueMessage(`It reduced the PP of ${getPokemonMessage(target, `'s\n${movesetMove.getName()} by ${movesetMove.ppUsed - lastPpUsed}!`)}`);
+    queueMessageIfEnabled(user, `It reduced the PP of ${getPokemonMessage(target, `'s\n${movesetMove.getName()} by ${movesetMove.ppUsed - lastPpUsed}!`)}`);
 
     return true;
   }
@@ -4509,7 +4510,7 @@ export class MovesetCopyMoveAttr extends OverrideMoveEffectAttr {
     user.summonData.moveset = user.getMoveset().slice(0);
     user.summonData.moveset[thisMoveIndex] = new PokemonMove(copiedMove.id, 0, 0);
 
-    user.scene.queueMessage(getPokemonMessage(user, ` copied\n${copiedMove.name}!`));
+    queueMessageIfEnabled(user, getPokemonMessage(user, ` copied\n${copiedMove.name}!`));
 
     return true;
   }
@@ -4544,7 +4545,7 @@ export class SketchAttr extends MoveEffectAttr {
 
     user.setMove(sketchIndex, sketchedMove.id);
 
-    user.scene.queueMessage(getPokemonMessage(user, ` sketched\n${sketchedMove.name}!`));
+    queueMessageIfEnabled(user, getPokemonMessage(user, ` sketched\n${sketchedMove.name}!`));
 
     return true;
   }
@@ -4587,7 +4588,7 @@ export class AbilityChangeAttr extends MoveEffectAttr {
 
     (this.selfTarget ? user : target).summonData.ability = this.ability;
 
-    user.scene.queueMessage("The " + getPokemonMessage((this.selfTarget ? user : target), ` acquired\n${allAbilities[this.ability].name}!`));
+    queueMessageIfEnabled(user, "The " + getPokemonMessage((this.selfTarget ? user : target), ` acquired\n${allAbilities[this.ability].name}!`));
 
     return true;
   }
@@ -4613,11 +4614,11 @@ export class AbilityCopyAttr extends MoveEffectAttr {
 
     user.summonData.ability = target.getAbility().id;
 
-    user.scene.queueMessage(getPokemonMessage(user, " copied the ") + getPokemonMessage(target, `'s\n${allAbilities[target.getAbility().id].name}!`));
+    queueMessageIfEnabled(pokemon, getPokemonMessage(user, " copied the ") + getPokemonMessage(target, `'s\n${allAbilities[target.getAbility().id].name}!`));
 
     if (this.copyToPartner && user.scene.currentBattle?.double && user.getAlly().hp) {
       user.getAlly().summonData.ability = target.getAbility().id;
-      user.getAlly().scene.queueMessage(getPokemonMessage(user.getAlly(), " copied the ") + getPokemonMessage(target, `'s\n${allAbilities[target.getAbility().id].name}!`));
+      queueMessageIfEnabled(user.getAlly(), getPokemonMessage(user.getAlly(), " copied the ") + getPokemonMessage(target, `'s\n${allAbilities[target.getAbility().id].name}!`));
     }
 
     return true;
@@ -4650,7 +4651,7 @@ export class AbilityGiveAttr extends MoveEffectAttr {
 
     target.summonData.ability = user.getAbility().id;
 
-    user.scene.queueMessage("The" + getPokemonMessage(target, `\nacquired ${allAbilities[user.getAbility().id].name}!`));
+    queueMessageIfEnabled(user, "The" + getPokemonMessage(target, `\nacquired ${allAbilities[user.getAbility().id].name}!`));
 
     return true;
   }
@@ -4670,7 +4671,7 @@ export class SwitchAbilitiesAttr extends MoveEffectAttr {
     user.summonData.ability = target.getAbility().id;
     target.summonData.ability = tempAbilityId;
 
-    user.scene.queueMessage(getPokemonMessage(user, " swapped\nabilities with its target!"));
+    queueMessageIfEnabled(user, getPokemonMessage(user, " swapped\nabilities with its target!"));
 
     return true;
   }
@@ -4688,7 +4689,7 @@ export class SuppressAbilitiesAttr extends MoveEffectAttr {
 
     target.summonData.abilitySuppressed = true;
 
-    target.scene.queueMessage(getPokemonMessage(target, " ability\nwas suppressed!"));
+    queueMessageIfEnabled(target, getPokemonMessage(target, " ability\nwas suppressed!"));
 
     return true;
   }
@@ -4715,7 +4716,7 @@ export class TransformAttr extends MoveEffectAttr {
       user.summonData.moveset = target.getMoveset().map(m => new PokemonMove(m.moveId, m.ppUsed, m.ppUp));
       user.summonData.types = target.getTypes();
 
-      user.scene.queueMessage(getPokemonMessage(user, ` transformed\ninto ${target.name}!`));
+      queueMessageIfEnabled(user, getPokemonMessage(user, ` transformed\ninto ${target.name}!`));
 
       user.loadAssets(false).then(() => {
         user.playAnim();
@@ -4770,7 +4771,7 @@ export class DestinyBondAttr extends MoveEffectAttr {
    * @returns true
    */
   apply(user: Pokemon, target: Pokemon, move: Move, args: any[]): boolean {
-    user.scene.queueMessage(`${getPokemonMessage(user, " is trying\nto take its foe down with it!")}`);
+    queueMessageIfEnabled(user, `${getPokemonMessage(user, " is trying\nto take its foe down with it!")}`);
     user.addTag(BattlerTagType.DESTINY_BOND, undefined, move.id, user.id);
     return true;
   }
@@ -4818,7 +4819,7 @@ const failIfDampCondition: MoveConditionFunc = (user, target, move) => {
   user.scene.getField(true).map(p=>applyAbAttrs(FieldPreventExplosiveMovesAbAttr, p, cancelled));
   // Queue a message if an ability prevented usage of the move
   if (cancelled.value) {
-    user.scene.queueMessage(getPokemonMessage(user, ` cannot use ${move.name}!`));
+    queueMessageIfEnabled(user, getPokemonMessage(user, ` cannot use ${move.name}!`));
   }
   return !cancelled.value;
 };
@@ -6861,7 +6862,7 @@ export function initMoves() {
       })
       .attr(HealStatusEffectAttr, true, StatusEffect.FREEZE)
       .attr(RemoveTypeAttr, Type.FIRE, (user) => {
-        user.scene.queueMessage(getPokemonMessage(user, " burned itself out!"));
+        queueMessageIfEnabled(user, getPokemonMessage(user, " burned itself out!"));
       }),
     new StatusMove(Moves.SPEED_SWAP, Type.PSYCHIC, -1, 10, -1, 0, 7)
       .unimplemented(),
@@ -7619,7 +7620,7 @@ export function initMoves() {
         return userTypes.includes(Type.ELECTRIC);
       })
       .attr(RemoveTypeAttr, Type.ELECTRIC, (user) => {
-        user.scene.queueMessage(getPokemonMessage(user, " used up all its electricity!"));
+        queueMessageIfEnabled(user, getPokemonMessage(user, " used up all its electricity!"));
       }),
     new AttackMove(Moves.GIGATON_HAMMER, Type.STEEL, MoveCategory.PHYSICAL, 160, 100, 5, -1, 0, 9)
       .makesContact(false)
