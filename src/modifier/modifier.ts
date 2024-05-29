@@ -10,6 +10,7 @@ import { Type } from "../data/type";
 import { EvolutionPhase } from "../evolution-phase";
 import { FusionSpeciesFormEvolution, pokemonEvolutions, pokemonPrevolutions } from "../data/pokemon-evolutions";
 import { getPokemonMessage } from "../messages";
+import { queueMessageIfEnabled } from '../messageUtils';
 import * as Utils from "../utils";
 import { TempBattleStat } from "../data/temp-battle-stat";
 import { BerryType, getBerryEffectFunc, getBerryPredicate } from "../data/berry";
@@ -740,7 +741,7 @@ export class SurviveDamageModifier extends PokemonHeldItemModifier {
     if (!surviveDamage.value && pokemon.randSeedInt(10) < this.getStackCount()) {
       surviveDamage.value = true;
 
-      pokemon.scene.queueMessage(getPokemonMessage(pokemon, ` hung on\nusing its ${this.type.name}!`));
+      queueMessageIfEnabled(pokemon, getPokemonMessage(pokemon, ` hung on\nusing its ${this.type.name}!`));
       return true;
     }
 
@@ -2173,7 +2174,7 @@ export class EnemyStatusEffectHealChanceModifier extends EnemyPersistentModifier
   apply(args: any[]): boolean {
     const target = (args[0] as Pokemon);
     if (target.status && Phaser.Math.RND.realInRange(0, 1) < (this.chance * this.getStackCount())) {
-      target.scene.queueMessage(getPokemonMessage(target, getStatusEffectHealText(target.status.effect)));
+      queueMessageIfEnabled(pokemon, getPokemonMessage(target, getStatusEffectHealText(target.status.effect)));
       target.resetStatus();
       target.updateInfo();
       return true;
