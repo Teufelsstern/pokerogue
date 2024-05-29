@@ -467,7 +467,7 @@ export class PostDefendDisguiseAbAttr extends PostDefendAbAttr {
       }
       pokemon.damageAndUpdate(recoilDamage, HitResult.OTHER);
       pokemon.turnData.damageTaken += recoilDamage;
-      pokemon.scene.queueMessage(getPokemonMessage(pokemon, "'s disguise was busted!"));
+      queueMessageIfEnabled(pokemon, getPokemonMessage(pokemon, "'s disguise was busted!"));
       return true;
     }
 
@@ -569,7 +569,7 @@ export class MoveImmunityStatChangeAbAttr extends MoveImmunityAbAttr {
 export class ReverseDrainAbAttr extends PostDefendAbAttr {
   applyPostDefend(pokemon: Pokemon, passive: boolean, attacker: Pokemon, move: PokemonMove, hitResult: HitResult, args: any[]): boolean {
     if (!!move.getMove().getAttrs(HitHealAttr).length || !!move.getMove().getAttrs(StrengthSapHealAttr).length ) {
-      pokemon.scene.queueMessage(getPokemonMessage(attacker, " sucked up the liquid ooze!"));
+      queueMessageIfEnabled(pokemon, getPokemonMessage(attacker, " sucked up the liquid ooze!"));
       return true;
     }
     return false;
@@ -1164,7 +1164,7 @@ export class PostAttackStealHeldItemAbAttr extends PostAttackAbAttr {
           const stolenItem = heldItems[pokemon.randSeedInt(heldItems.length)];
           pokemon.scene.tryTransferHeldItemModifier(stolenItem, pokemon, false, false).then(success => {
             if (success) {
-              pokemon.scene.queueMessage(getPokemonMessage(pokemon, ` stole\n${defender.name}'s ${stolenItem.type.name}!`));
+              queueMessageIfEnabled(pokemon, getPokemonMessage(pokemon, ` stole\n${defender.name}'s ${stolenItem.type.name}!`));
             }
             resolve(success);
           });
@@ -1253,7 +1253,7 @@ export class PostDefendStealHeldItemAbAttr extends PostDefendAbAttr {
           const stolenItem = heldItems[pokemon.randSeedInt(heldItems.length)];
           pokemon.scene.tryTransferHeldItemModifier(stolenItem, pokemon, false, false).then(success => {
             if (success) {
-              pokemon.scene.queueMessage(getPokemonMessage(pokemon, ` stole\n${attacker.name}'s ${stolenItem.type.name}!`));
+              queueMessageIfEnabled(pokemon, getPokemonMessage(pokemon, ` stole\n${attacker.name}'s ${stolenItem.type.name}!`));
             }
             resolve(success);
           });
@@ -1352,7 +1352,7 @@ export class CopyFaintedAllyAbilityAbAttr extends PostKnockOutAbAttr {
   applyPostKnockOut(pokemon: Pokemon, passive: boolean, knockedOut: Pokemon, args: any[]): boolean | Promise<boolean> {
     if (pokemon.isPlayer() === knockedOut.isPlayer() && !knockedOut.getAbility().hasAttr(UncopiableAbilityAbAttr)) {
       pokemon.summonData.ability = knockedOut.getAbility().id;
-      pokemon.scene.queueMessage(getPokemonMessage(knockedOut, `'s ${allAbilities[knockedOut.getAbility().id].name} was taken over!`));
+      queueMessageIfEnabled(pokemon, getPokemonMessage(knockedOut, `'s ${allAbilities[knockedOut.getAbility().id].name} was taken over!`));
       return true;
     }
 
@@ -1444,7 +1444,7 @@ export class PostSummonMessageAbAttr extends PostSummonAbAttr {
   }
 
   applyPostSummon(pokemon: Pokemon, passive: boolean, args: any[]): boolean {
-    pokemon.scene.queueMessage(this.messageFunc(pokemon));
+    queueMessageIfEnabled(pokemon, this.messageFunc(pokemon));
 
     return true;
   }
@@ -1461,7 +1461,7 @@ export class PostSummonUnnamedMessageAbAttr extends PostSummonAbAttr {
   }
 
   applyPostSummon(pokemon: Pokemon, passive: boolean, args: any[]): boolean {
-    pokemon.scene.queueMessage(this.message);
+    queueMessageIfEnabled(pokemon, this.message);
 
     return true;
   }
@@ -1564,7 +1564,7 @@ export class PostSummonClearAllyStatsAbAttr extends PostSummonAbAttr {
         target.summonData.battleStats[s] = 0;
       }
 
-      target.scene.queueMessage(getPokemonMessage(target, "'s stat changes\nwere removed!"));
+      queueMessageIfEnabled(target, getPokemonMessage(target, "'s stat changes\nwere removed!"));
 
       return true;
     }
@@ -1674,7 +1674,7 @@ export class TraceAbAttr extends PostSummonAbAttr {
 
     pokemon.summonData.ability = target.getAbility().id;
 
-    pokemon.scene.queueMessage(getPokemonMessage(pokemon, ` traced ${target.name}'s\n${allAbilities[target.getAbility().id].name}!`));
+    queueMessageIfEnabled(pokemon, getPokemonMessage(pokemon, ` traced ${target.name}'s\n${allAbilities[target.getAbility().id].name}!`));
 
     return true;
   }
@@ -1712,7 +1712,7 @@ export class PostSummonTransformAbAttr extends PostSummonAbAttr {
 
     pokemon.loadAssets(false).then(() => pokemon.playAnim());
 
-    pokemon.scene.queueMessage(getPokemonMessage(pokemon, ` transformed\ninto ${target.name}!`));
+    queueMessageIfEnabled(pokemon, getPokemonMessage(pokemon, ` transformed\ninto ${target.name}!`));
 
     return true;
   }
@@ -2110,7 +2110,7 @@ export class ForewarnAbAttr extends PostSummonAbAttr {
         }
       }
     }
-    pokemon.scene.queueMessage(getPokemonMessage(pokemon, " was forewarned about " + maxMove + "!"));
+    queueMessageIfEnabled(pokemon, getPokemonMessage(pokemon, " was forewarned about " + maxMove + "!"));
     return true;
   }
 }
@@ -2122,7 +2122,7 @@ export class FriskAbAttr extends PostSummonAbAttr {
 
   applyPostSummon(pokemon: Pokemon, passive: boolean, args: any[]): boolean {
     for (const opponent of pokemon.getOpponents()) {
-      pokemon.scene.queueMessage(getPokemonMessage(pokemon, " frisked " + opponent.name + "'s " + opponent.getAbility().name + "!"));
+      queueMessageIfEnabled(pokemon, getPokemonMessage(pokemon, " frisked " + opponent.name + "'s " + opponent.getAbility().name + "!"));
     }
     return true;
   }
@@ -2350,7 +2350,7 @@ export class PostTurnLootAbAttr extends PostTurnAbAttr {
       berryModifier.stackCount++;
     }
 
-    pokemon.scene.queueMessage(getPokemonMessage(pokemon, ` harvested one ${chosenBerry.name}!`));
+    queueMessageIfEnabled(pokemon, getPokemonMessage(pokemon, ` harvested one ${chosenBerry.name}!`));
     pokemon.scene.updateModifiers(pokemon.isPlayer());
 
     return true;
@@ -2451,7 +2451,7 @@ export class PostTurnHurtIfSleepingAbAttr extends PostTurnAbAttr {
     for (const opp of pokemon.getOpponents()) {
       if (opp.status?.effect === StatusEffect.SLEEP || opp.hasAbility(Abilities.COMATOSE)) {
         opp.damageAndUpdate(Math.floor(Math.max(1, opp.getMaxHp() / 8)), HitResult.OTHER);
-        pokemon.scene.queueMessage(i18next.t("abilityTriggers:badDreams", {pokemonName: `${getPokemonPrefix(opp)}${opp.name}`}));
+        queueMessageIfEnabled(pokemon, i18next.t("abilityTriggers:badDreams", {pokemonName: `${getPokemonPrefix(opp)}${opp.name}`}));
         hadEffect = true;
       }
 
@@ -2481,7 +2481,7 @@ export class FetchBallAbAttr extends PostTurnAbAttr {
     if (lastUsed !== null && pokemon.isPlayer) {
       pokemon.scene.pokeballCounts[lastUsed]++;
       pokemon.scene.currentBattle.lastUsedPokeball = null;
-      pokemon.scene.queueMessage(getPokemonMessage(pokemon, ` found a\n${getPokeballName(lastUsed)}!`));
+      queueMessageIfEnabled(pokemon, getPokemonMessage(pokemon, ` found a\n${getPokeballName(lastUsed)}!`));
       return true;
     }
     return false;
@@ -2707,7 +2707,7 @@ export class PostBattleLootAbAttr extends PostBattleAbAttr {
       const randItem = Utils.randSeedItem(postBattleLoot);
       if (pokemon.scene.tryTransferHeldItemModifier(randItem, pokemon, false, true, true)) {
         postBattleLoot.splice(postBattleLoot.indexOf(randItem), 1);
-        pokemon.scene.queueMessage(getPokemonMessage(pokemon, ` picked up\n${randItem.type.name}!`));
+        queueMessageIfEnabled(pokemon, getPokemonMessage(pokemon, ` picked up\n${randItem.type.name}!`));
         return true;
       }
     }
