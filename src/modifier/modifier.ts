@@ -2174,7 +2174,7 @@ export class EnemyStatusEffectHealChanceModifier extends EnemyPersistentModifier
   apply(args: any[]): boolean {
     const target = (args[0] as Pokemon);
     if (target.status && Phaser.Math.RND.realInRange(0, 1) < (this.chance * this.getStackCount())) {
-      queueMessageIfEnabled(pokemon, getPokemonMessage(target, getStatusEffectHealText(target.status.effect)));
+      queueMessageIfEnabled(target, getPokemonMessage(target, getStatusEffectHealText(target.status.effect)));
       target.resetStatus();
       target.updateInfo();
       return true;
