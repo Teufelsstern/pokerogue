@@ -4191,15 +4191,27 @@ export class ExpPhase extends PlayerPartyMemberPokemonPhase {
     const exp = new Utils.NumberHolder(this.expValue);
     this.scene.applyModifiers(ExpBoosterModifier, true, exp);
     exp.value = Math.floor(exp.value);
-    this.scene.ui.showText(i18next.t("battle:expGain", { pokemonName: pokemon.name, exp: exp.value }), null, () => {
-      const lastLevel = pokemon.level;
-      pokemon.addExp(exp.value);
-      const newLevel = pokemon.level;
-      if (newLevel > lastLevel) {
-        this.scene.unshiftPhase(new LevelUpPhase(this.scene, this.partyMemberIndex, lastLevel, newLevel));
-      }
-      pokemon.updateInfo().then(() => this.end());
-    }, null, true);
+    if (!this.scene.skipAfterAttackMessages) {
+	  this.scene.ui.showText(i18next.t("battle:expGain", { pokemonName: pokemon.name, exp: exp.value }), null, () => {
+	    // Interne Funktionen hier ausführen
+	    const lastLevel = pokemon.level;
+	    pokemon.addExp(exp.value);
+	    const newLevel = pokemon.level;
+	    if (newLevel > lastLevel) {
+	      this.scene.unshiftPhase(new LevelUpPhase(this.scene, this.partyMemberIndex, lastLevel, newLevel));
+	    }
+	    pokemon.updateInfo().then(() => this.end());
+	  }, null, true);
+	} else {
+	  // Interne Funktionen hier ausführen, ohne Text anzuzeigen
+	  const lastLevel = pokemon.level;
+	  pokemon.addExp(exp.value);
+	  const newLevel = pokemon.level;
+	  if (newLevel > lastLevel) {
+	    this.scene.unshiftPhase(new LevelUpPhase(this.scene, this.partyMemberIndex, lastLevel, newLevel));
+	  }
+	  pokemon.updateInfo().then(() => this.end());
+	}
   }
 }
 
