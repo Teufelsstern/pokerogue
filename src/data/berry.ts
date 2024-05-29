@@ -5,7 +5,7 @@ import { BattleStat } from "./battle-stat";
 import { BattlerTagType } from "./enums/battler-tag-type";
 import { getStatusEffectHealText } from "./status-effect";
 import * as Utils from "../utils";
-import { queueMessageIfEnabled } from './messageUtils';
+import { queueMessageIfEnabled } from '../messageUtils';
 import { DoubleBerryEffectAbAttr, ReduceBerryUseThresholdAbAttr, applyAbAttrs } from "./ability";
 import i18next from "../plugins/i18n";
 
