@@ -5,6 +5,7 @@ import { BattleStat } from "./battle-stat";
 import { BattlerTagType } from "./enums/battler-tag-type";
 import { getStatusEffectHealText } from "./status-effect";
 import * as Utils from "../utils";
+import { queueMessageIfEnabled } from './messageUtils';
 import { DoubleBerryEffectAbAttr, ReduceBerryUseThresholdAbAttr, applyAbAttrs } from "./ability";
 import i18next from "../plugins/i18n";
 
@@ -93,7 +94,7 @@ export function getBerryEffectFunc(berryType: BerryType): BerryEffectFunc {
         pokemon.battleData.berriesEaten.push(berryType);
       }
       if (pokemon.status) {
-        pokemon.scene.queueMessage(getPokemonMessage(pokemon, getStatusEffectHealText(pokemon.status.effect)));
+        queueMessageIfEnabled(pokemon, getPokemonMessage(pokemon, getStatusEffectHealText(pokemon.status.effect)));
         pokemon.resetStatus();
         pokemon.updateInfo();
       }
@@ -139,7 +140,7 @@ export function getBerryEffectFunc(berryType: BerryType): BerryEffectFunc {
       const ppRestoreMove = pokemon.getMoveset().find(m => !m.getPpRatio()) ? pokemon.getMoveset().find(m => !m.getPpRatio()) : pokemon.getMoveset().find(m => m.getPpRatio() < 1);
       if (ppRestoreMove !== undefined) {
         ppRestoreMove.ppUsed = Math.max(ppRestoreMove.ppUsed - 10, 0);
-        pokemon.scene.queueMessage(getPokemonMessage(pokemon, ` restored PP to its move ${ppRestoreMove.getName()}\nusing its ${getBerryName(berryType)}!`));
+        queueMessageIfEnabled(pokemon, getPokemonMessage(pokemon, ` restored PP to its move ${ppRestoreMove.getName()}\nusing its ${getBerryName(berryType)}!`));
       }
     };
   }
