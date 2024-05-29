@@ -13,6 +13,7 @@ import Move, { AttackMove, MoveCategory, MoveFlags, MoveTarget, StatusMoveTypeIm
 import { ArenaTagSide, ArenaTrapTag } from "./arena-tag";
 import { ArenaTagType } from "./enums/arena-tag-type";
 import { Stat } from "./pokemon-stat";
+import { queueMessageIfEnabled } from './messageUtils';
 import { BerryModifier, PokemonHeldItemModifier } from "../modifier/modifier";
 import { Moves } from "./enums/moves";
 import { TerrainType } from "./terrain";
